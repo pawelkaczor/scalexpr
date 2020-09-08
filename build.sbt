@@ -11,6 +11,7 @@ scalaVersion := "2.13.3"
 publishMavenStyle := true
 homepage := Some(new URL("http://github.com/pawelkaczor/scalexpr"))
 licenses := ("Apache2", new URL("http://raw.githubusercontent.com/pawelkaczor/scalexpr/master/LICENSE")) :: Nil
+publishTo := Some(if (isSnapshot.value) Opts.resolver.sonatypeSnapshots else Opts.resolver.sonatypeStaging)
 
 sonatypeProfileName := "pl.newicom"
 
