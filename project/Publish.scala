@@ -7,6 +7,11 @@ object Publish {
     pomExtra :=
       <developers>
         <developer>
+          <id>virsox</id>
+          <name>Wilson Akio Higashino</name>
+          <url>https://github.com/virsox</url>
+        </developer>
+        <developer>
           <id>pawelkaczor</id>
           <name>Pawel Kaczor</name>
           <url>https://github.com/pawelkaczor</url>

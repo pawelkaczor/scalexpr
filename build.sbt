@@ -20,3 +20,5 @@ libraryDependencies ++= Seq(
   "com.lihaoyi"   %% "fastparse"       % "2.2.2",
   "org.scalatest" %% "scalatest"       % "3.2.0" % Test
 )
+
+Publish.settings
