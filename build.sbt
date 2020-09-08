@@ -8,6 +8,12 @@ version := "0.0.1-SNAPSHOT"
 
 scalaVersion := "2.13.3"
 
+publishMavenStyle := true
+homepage := Some(new URL("http://github.com/pawelkaczor/scalexpr"))
+licenses := ("Apache2", new URL("http://raw.githubusercontent.com/pawelkaczor/scalexpr/master/LICENSE")) :: Nil
+
+sonatypeProfileName := "pl.newicom"
+
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.1.3",
   "org.scala-lang" % "scala-compiler"  % scalaVersion.value,
