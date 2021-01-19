@@ -21,3 +21,4 @@ project/plugins/project/
 
 # Mac files
 .DS_Store
+/.bsp/sbt.json

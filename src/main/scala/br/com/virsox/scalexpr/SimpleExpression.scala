@@ -19,12 +19,13 @@ trait Constant[T] extends SimpleExpression[T] {
   override def resolve[A](context: A = EmptyContext)(implicit ctxLike: ContextLike[A]): T = value
 }
 
-case class BooleanConstant(value: Boolean)  extends BooleanExpr with Constant[Boolean]
-case class IntConstant(value: Int)          extends NumericExpr[Int] with Constant[Int]
-case class LongConstant(value: Long)        extends NumericExpr[Long] with Constant[Long]
-case class DoubleConstant(value: Double)    extends NumericExpr[Double] with Constant[Double]
-case class StringConstant(value: String)    extends OrderingExpr[String] with Constant[String]
-case class DateTimeConstant(value: Instant) extends OrderingExpr[Instant] with Constant[Instant]
+case class BooleanConstant(value: Boolean)       extends BooleanExpr with Constant[Boolean]
+case class IntConstant(value: Int)               extends NumericExpr[Int] with Constant[Int]
+case class LongConstant(value: Long)             extends NumericExpr[Long] with Constant[Long]
+case class DoubleConstant(value: Double)         extends NumericExpr[Double] with Constant[Double]
+case class BigDecimalConstant(value: BigDecimal) extends NumericExpr[BigDecimal] with Constant[BigDecimal]
+case class StringConstant(value: String)         extends OrderingExpr[String] with Constant[String]
+case class DateTimeConstant(value: Instant)      extends OrderingExpr[Instant] with Constant[Instant]
 
 /** Represents a variable. */
 trait Variable[T] extends SimpleExpression[T] {
@@ -57,9 +58,10 @@ trait Variable[T] extends SimpleExpression[T] {
   }
 }
 
-case class BooleanVar(name: String)  extends BooleanExpr with Variable[Boolean]
-case class IntVar(name: String)      extends NumericExpr[Int] with Variable[Int]
-case class LongVar(name: String)     extends NumericExpr[Long] with Variable[Long]
-case class DoubleVar(name: String)   extends NumericExpr[Double] with Variable[Double]
-case class StringVar(name: String)   extends OrderingExpr[String] with Variable[String]
-case class DateTimeVar(name: String) extends OrderingExpr[Instant] with Variable[Instant]
+case class BooleanVar(name: String)    extends BooleanExpr with Variable[Boolean]
+case class IntVar(name: String)        extends NumericExpr[Int] with Variable[Int]
+case class LongVar(name: String)       extends NumericExpr[Long] with Variable[Long]
+case class DoubleVar(name: String)     extends NumericExpr[Double] with Variable[Double]
+case class BigDecimalVar(name: String) extends NumericExpr[BigDecimal] with Variable[BigDecimal]
+case class StringVar(name: String)     extends OrderingExpr[String] with Variable[String]
+case class DateTimeVar(name: String)   extends OrderingExpr[Instant] with Variable[Instant]

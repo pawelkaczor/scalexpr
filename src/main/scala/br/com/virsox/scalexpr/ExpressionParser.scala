@@ -107,6 +107,8 @@ class ExpressionParser extends DateParser {
   def intLiteral[_: P]: P[NumericExpr[Int]]       = intParser.map(s => IntConstant(s.toInt))
   def longLiteral[_: P]: P[NumericExpr[Long]]     = longParser.map(s => LongConstant(s.toLong))
   def doubleLiteral[_: P]: P[NumericExpr[Double]] = doubleParser.map(s => DoubleConstant(s.toDouble))
+  def bigDecimalLiteral[_: P]: P[NumericExpr[BigDecimal]] =
+    (intParser | longParser | doubleParser).map(s => BigDecimalConstant(BigDecimal(s)))
 
   // ---------------------------------------------------------------
   // -----------------    Variable parsers    ----------------------
@@ -118,12 +120,13 @@ class ExpressionParser extends DateParser {
   // a variable is a sequence of identifiers separated by "."
   def variableParser[_: P]: P[Unit] = P(identifierParser ~ ("." ~ identifierParser).rep)
 
-  def intVariable[_: P]: P[IntVar]           = variableParser.!.map(IntVar)
-  def longVariable[_: P]: P[LongVar]         = variableParser.!.map(LongVar)
-  def doubleVariable[_: P]: P[DoubleVar]     = variableParser.!.map(DoubleVar)
-  def dateTimeVariable[_: P]: P[DateTimeVar] = variableParser.!.map(DateTimeVar)
-  def booleanVariable[_: P]: P[BooleanVar]   = variableParser.!.map(BooleanVar)
-  def stringVariable[_: P]: P[StringVar]     = variableParser.!.map(StringVar)
+  def intVariable[_: P]: P[IntVar]               = variableParser.!.map(IntVar)
+  def longVariable[_: P]: P[LongVar]             = variableParser.!.map(LongVar)
+  def doubleVariable[_: P]: P[DoubleVar]         = variableParser.!.map(DoubleVar)
+  def bigDecimalVariable[_: P]: P[BigDecimalVar] = variableParser.!.map(BigDecimalVar)
+  def dateTimeVariable[_: P]: P[DateTimeVar]     = variableParser.!.map(DateTimeVar)
+  def booleanVariable[_: P]: P[BooleanVar]       = variableParser.!.map(BooleanVar)
+  def stringVariable[_: P]: P[StringVar]         = variableParser.!.map(StringVar)
 
   // ---------------------------------------------------------------
   // ------------------   String parsers    ------------------------
@@ -143,9 +146,10 @@ class ExpressionParser extends DateParser {
   def numericVariable[_: P, T: TypeTag]: P[NumericExpr[T]] = {
     val tt = implicitly[TypeTag[T]]
     tt.tpe match {
-      case _ if typeOf[T] =:= typeOf[Int]    => intVariable.asInstanceOf[P[NumericExpr[T]]]
-      case _ if typeOf[T] =:= typeOf[Long]   => longVariable.asInstanceOf[P[NumericExpr[T]]]
-      case _ if typeOf[T] =:= typeOf[Double] => doubleVariable.asInstanceOf[P[NumericExpr[T]]]
+      case _ if typeOf[T] =:= typeOf[Int]        => intVariable.asInstanceOf[P[NumericExpr[T]]]
+      case _ if typeOf[T] =:= typeOf[Long]       => longVariable.asInstanceOf[P[NumericExpr[T]]]
+      case _ if typeOf[T] =:= typeOf[Double]     => doubleVariable.asInstanceOf[P[NumericExpr[T]]]
+      case _ if typeOf[T] =:= typeOf[BigDecimal] => bigDecimalVariable.asInstanceOf[P[NumericExpr[T]]]
     }
   }
 
@@ -157,9 +161,10 @@ class ExpressionParser extends DateParser {
   def numericLiteral[_: P, T: TypeTag]: P[NumericExpr[T]] = {
     val tt = implicitly[TypeTag[T]]
     tt.tpe match {
-      case _ if typeOf[T] =:= typeOf[Int]    => intLiteral.asInstanceOf[P[NumericExpr[T]]]
-      case _ if typeOf[T] =:= typeOf[Long]   => longLiteral.asInstanceOf[P[NumericExpr[T]]]
-      case _ if typeOf[T] =:= typeOf[Double] => doubleLiteral.asInstanceOf[P[NumericExpr[T]]]
+      case _ if typeOf[T] =:= typeOf[Int]        => intLiteral.asInstanceOf[P[NumericExpr[T]]]
+      case _ if typeOf[T] =:= typeOf[Long]       => longLiteral.asInstanceOf[P[NumericExpr[T]]]
+      case _ if typeOf[T] =:= typeOf[Double]     => doubleLiteral.asInstanceOf[P[NumericExpr[T]]]
+      case _ if typeOf[T] =:= typeOf[BigDecimal] => bigDecimalLiteral.asInstanceOf[P[NumericExpr[T]]]
     }
   }
 
@@ -238,13 +243,12 @@ class ExpressionParser extends DateParser {
     P(expr[A, Long] ~ relationalOperators.! ~ expr[A, Long]).map(evalRelational[Long])
   def doubleRelationalExpr[A: P]: P[RelationalExpression[Double]] =
     P(expr[A, Double] ~ relationalOperators.! ~ expr[A, Double]).map(evalRelational[Double])
+  def bigDecimalRelationalExpr[A: P]: P[RelationalExpression[BigDecimal]] =
+    P(expr[A, BigDecimal] ~ relationalOperators.! ~ expr[A, BigDecimal]).map(evalRelational[BigDecimal])
   def dateTimeRelationalExpr[_: P]: P[RelationalExpression[Instant]] =
     P(dateTimeTerm ~ relationalOperators.! ~ dateTimeTerm).map(evalRelational[Instant])
-  def relationalExpr[_: P]: P[RelationalExpression[_ >: Instant with String with Int with Long with Double]] =
-    P(
-      strRelationalExpr | dateTimeRelationalExpr | intRelationalExpr | longRelationalExpr |
-        doubleRelationalExpr
-    )
+  def relationalExpr[_: P]: P[RelationalExpression[_ >: Instant with String with BigDecimal]] =
+    P(strRelationalExpr | dateTimeRelationalExpr | bigDecimalRelationalExpr)
 
   // ---------------------------------------------------------------
   // ------------------   Boolean expressions   --------------------
