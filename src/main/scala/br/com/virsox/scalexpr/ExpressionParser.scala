@@ -35,10 +35,10 @@ class ExpressionParser extends DateParser {
 
   def parseRelationalExpression(str: String): Try[RelationalExpression[_ >: Instant with String with BigDecimal]] =
     parse(str, relationalExpr(_)) match {
-      case Parsed.Success(value, _) => Success(value)
-      case f: Parsed.Failure => //(_, _, _)  => {
-        println(s"[${f.index}], ${f.extra.trace()}")
-        Failure(ExpressionParsingException("Error"))
+      case Parsed.Success(value, _) =>
+        Success(value)
+      case f: Parsed.Failure =>
+        Failure(ExpressionParsingException(s"[${f.index}], ${f.extra.trace()}"))
     }
 
   /** *
@@ -48,44 +48,23 @@ class ExpressionParser extends DateParser {
     */
   def parseBooleanExpression(str: String): Try[Expression[Boolean]] =
     parse(str, booleanExpr(_)) match {
-      case Parsed.Success(value, _) => Success(value)
-      case f: Parsed.Failure => //(_, _, _)  => {
-        println(s"[${f.index}], ${f.extra.trace()}")
-        Failure(ExpressionParsingException("Error"))
+      case Parsed.Success(value, _) =>
+        Success(value)
+      case f: Parsed.Failure =>
+        Failure(ExpressionParsingException(s"[${f.index}], ${f.extra.trace()}"))
     }
 
   /** *
-    * Parse a String as a double expression.
+    * Parse a String as a BigDecimal expression.
     * @param str String to be parsed.
-    * @return Double expression if the String can be successfully parsed, a Failure otherwise.
+    * @return BigDecimal expression if the String can be successfully parsed, a Failure otherwise.
     */
-
-  def parseDoubleExpression(str: String): Try[NumericExpr[Double]] =
-    parse(str, exprDouble(_)) match {
-      case Parsed.Success(value, _) => Success(value)
-      case Parsed.Failure(_, _, _)  => Failure(ExpressionParsingException("Error"))
-    }
-
-  /** *
-    * Parse a String as a int expression.
-    * @param str String to be parsed.
-    * @return Int expression if the String can be successfully parsed, a Failure otherwise.
-    */
-  def parseIntExpression(str: String): Try[Expression[Int]] =
-    parse(str, exprInt(_)) match {
-      case Parsed.Success(value, _) => Success(value)
-      case Parsed.Failure(_, _, _)  => Failure(ExpressionParsingException("Error"))
-    }
-
-  /** *
-    * Parse a String as a long expression.
-    * @param str String to be parsed.
-    * @return Long expression if the String can be successfully parsed, a Failure otherwise.
-    */
-  def parseLongExpression(str: String): Try[Expression[Long]] =
-    parse(str, exprLong(_)) match {
-      case Parsed.Success(value, _) => Success(value)
-      case Parsed.Failure(_, _, _)  => Failure(ExpressionParsingException("Error"))
+  def parseArithmeticExpression(str: String): Try[Expression[BigDecimal]] =
+    parse(str, arithmeticExpr(_)) match {
+      case Parsed.Success(value, _) =>
+        Success(value)
+      case f: Parsed.Failure =>
+        Failure(ExpressionParsingException(s"[${f.index}], ${f.extra.trace()}"))
     }
 
   // ---------------------------------------------------------------
@@ -150,30 +129,26 @@ class ExpressionParser extends DateParser {
     * @tparam T Type of the variable returned by the parser.
     * @return numeric variable parser.
     */
-  def numericVariable[_: P, T: TypeTag]: P[NumericExpr[T]] = {
-    val tt = implicitly[TypeTag[T]]
-    tt.tpe match {
+  def numericVariable[_: P, T: TypeTag]: P[NumericExpr[T]] =
+    implicitly[TypeTag[T]].tpe match {
       case _ if typeOf[T] =:= typeOf[Int]        => intVariable.asInstanceOf[P[NumericExpr[T]]]
       case _ if typeOf[T] =:= typeOf[Long]       => longVariable.asInstanceOf[P[NumericExpr[T]]]
       case _ if typeOf[T] =:= typeOf[Double]     => doubleVariable.asInstanceOf[P[NumericExpr[T]]]
       case _ if typeOf[T] =:= typeOf[BigDecimal] => bigDecimalVariable.asInstanceOf[P[NumericExpr[T]]]
     }
-  }
 
   /** *
     * Obtains a numeric literal parser based on the informed type.
     * @tparam T Type of the literal returned by the parser.
     * @return numeric literal parser.
     */
-  def numericLiteral[_: P, T: TypeTag]: P[NumericExpr[T]] = {
-    val tt = implicitly[TypeTag[T]]
-    tt.tpe match {
+  def numericLiteral[_: P, T: TypeTag]: P[NumericExpr[T]] =
+    implicitly[TypeTag[T]].tpe match {
       case _ if typeOf[T] =:= typeOf[Int]        => intLiteral.asInstanceOf[P[NumericExpr[T]]]
       case _ if typeOf[T] =:= typeOf[Long]       => longLiteral.asInstanceOf[P[NumericExpr[T]]]
       case _ if typeOf[T] =:= typeOf[Double]     => doubleLiteral.asInstanceOf[P[NumericExpr[T]]]
       case _ if typeOf[T] =:= typeOf[BigDecimal] => bigDecimalLiteral.asInstanceOf[P[NumericExpr[T]]]
     }
-  }
 
   /** *
     * Builds a ArithmeticExpression composed of a left-hand subexpression followed by a sequence of
@@ -206,9 +181,7 @@ class ExpressionParser extends DateParser {
   def divMul[A: P, T: TypeTag]: P[NumericExpr[T]] = P(factor[A, T] ~ (CharIn("*/").! ~ factor[A, T]).rep).map(evalNumeric[T])
 
   /** Parser for arithmetic expressions. */
-  def exprDouble[A: P]: P[NumericExpr[Double]] = numExpr[A, Double]
-  def exprInt[A: P]: P[NumericExpr[Int]]       = numExpr[A, Int]
-  def exprLong[A: P]: P[NumericExpr[Long]]     = numExpr[A, Long]
+  def arithmeticExpr[A: P]: P[NumericExpr[BigDecimal]] = numExpr[A, BigDecimal]
 
   def numExpr[A: P, T: TypeTag]: P[NumericExpr[T]] = P(divMul[A, T] ~ (CharIn("+\\-").! ~ divMul[A, T]).rep).map(evalNumeric[T])
 
@@ -244,16 +217,7 @@ class ExpressionParser extends DateParser {
     P((stringLiteral ~ relationalOperators.! ~ stringVariable) | (stringVariable ~ relationalOperators.! ~ stringLiteral))
       .map(evalRelational[String])
 
-  def intRelationalExpr[A: P]: P[RelationalExpression[Int]] =
-    P(numExpr[A, Int] ~ relationalOperators.! ~ numExpr[A, Int]).map(evalRelational[Int])
-
-  def longRelationalExpr[A: P]: P[RelationalExpression[Long]] =
-    P(numExpr[A, Long] ~ relationalOperators.! ~ numExpr[A, Long]).map(evalRelational[Long])
-
-  def doubleRelationalExpr[A: P]: P[RelationalExpression[Double]] =
-    P(numExpr[A, Double] ~ relationalOperators.! ~ numExpr[A, Double]).map(evalRelational[Double])
-
-  def bigDecimalRelationalExpr[A: P]: P[RelationalExpression[BigDecimal]] =
+  def numericRelationalExpr[A: P]: P[RelationalExpression[BigDecimal]] =
     P(numExpr[A, BigDecimal] ~ relationalOperators.! ~ numExpr[A, BigDecimal]).map(evalRelational[BigDecimal])
 
   def dateTimeRelationalExpr[A: P]: P[RelationalExpression[Instant]] =
@@ -261,7 +225,7 @@ class ExpressionParser extends DateParser {
       .map(evalRelational[Instant])
 
   def relationalExpr[_: P]: P[RelationalExpression[_ >: Instant with String with BigDecimal]] =
-    P(strRelationalExpr | dateTimeRelationalExpr | bigDecimalRelationalExpr)
+    P(strRelationalExpr | dateTimeRelationalExpr | numericRelationalExpr)
 
   // ---------------------------------------------------------------
   // ------------------   Boolean expressions   --------------------

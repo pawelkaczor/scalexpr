@@ -24,72 +24,67 @@ class ExpressionParserTest extends AnyFlatSpec with Matchers {
     }
   }
 
-  "An ExpressionParser" should "parse an int expression" in new Fixture {
-    verify(parser.parseIntExpression("5 +3"), IntConstant(5) + IntConstant(3))
+  "An ExpressionParser" should "parse an arithmetic expression" in new Fixture {
+    verify(parser.parseArithmeticExpression("5 +3"), BigDecimalConstant(5) + BigDecimalConstant(3))
   }
 
-  it should "consider operator precedence in an int expression" in new Fixture {
-    verify(parser.parseIntExpression("4+1 * 2"), IntConstant(4) + (IntConstant(1) * IntConstant(2)))
+  it should "consider operator precedence in an arithmetic expression" in new Fixture {
+    verify(parser.parseArithmeticExpression("4+1 * 2"), BigDecimalConstant(4) + (BigDecimalConstant(1) * BigDecimalConstant(2)))
   }
 
-  it should "consider parenthesis precedence in an int expression" in new Fixture {
+  it should "consider parenthesis precedence in an arithmetic expression" in new Fixture {
     verify(
-      parser.parseIntExpression("3 * ((1 + 2) * (5 + 1))"),
-      IntConstant(3) *
-        ((IntConstant(1) + IntConstant(2)) *
-          (IntConstant(5) + IntConstant(1)))
+      parser.parseArithmeticExpression("3 * ((1 + 2) * (5 + 1))"),
+      BigDecimalConstant(3) *
+        ((BigDecimalConstant(1) + BigDecimalConstant(2)) *
+          (BigDecimalConstant(5) + BigDecimalConstant(1)))
     )
   }
 
   it should "parse variables in an int expression" in new Fixture {
-    verify(parser.parseIntExpression("sourceId  + 1 * 2"), IntVar("sourceId") + (IntConstant(1) * IntConstant(2)))
+    verify(
+      parser.parseArithmeticExpression("sourceId  + 1 * 2"),
+      BigDecimalVar("sourceId") + (BigDecimalConstant(1) * BigDecimalConstant(2))
+    )
   }
 
   it should "resolve variables in an int expression with parenthesis" in new Fixture {
     verify(
-      parser.parseIntExpression("3 * ((sourceId + 2) * (sourceId + 1))"),
-      IntConstant(3) *
-        ((IntVar("sourceId") + IntConstant(2)) *
-          (IntVar("sourceId") + IntConstant(1)))
+      parser.parseArithmeticExpression("3 * ((sourceId + 2) * (sourceId + 1))"),
+      BigDecimalConstant(3) *
+        ((BigDecimalVar("sourceId") + BigDecimalConstant(2)) *
+          (BigDecimalVar("sourceId") + BigDecimalConstant(1)))
     )
   }
 
-  it should "calculate a long expression" in new Fixture {
-    verify(parser.parseLongExpression("2L + 30L"), LongConstant(2) + LongConstant(30))
+  it should "calculate an arithmetic expression" in new Fixture {
+    verify(parser.parseArithmeticExpression("2 + 30"), BigDecimalConstant(2) + BigDecimalConstant(30))
   }
 
-  it should "resolve variables in a long expression" in new Fixture {
-    verify(parser.parseLongExpression("sourceId + 30L"), LongVar("sourceId") + LongConstant(30L))
+  it should "resolve variables in an arithmetic expression" in new Fixture {
+    verify(parser.parseArithmeticExpression("sourceId + 30"), BigDecimalVar("sourceId") + BigDecimalConstant(30))
   }
 
-  it should "parse a double expression" in new Fixture {
-    verify(parser.parseDoubleExpression("7.2 + 3.0"), DoubleConstant(7.2) + DoubleConstant(3.0))
+  it should "parse an arithmetic expression with doubles" in new Fixture {
+    verify(parser.parseArithmeticExpression("7.2 + 3.0"), BigDecimalConstant(7.2) + BigDecimalConstant(3.0))
   }
 
-  it should "consider operator precedence in a double expression" in new Fixture {
+  it should "consider operator precedence in an arithmetic expression with doubles" in new Fixture {
     verify(
-      parser.parseDoubleExpression("7.2 + 1.8*2.0"),
-      DoubleConstant(7.2) +
-        (DoubleConstant(1.8) * DoubleConstant(2.0))
+      parser.parseArithmeticExpression("7.2 + 1.8*2.0"),
+      BigDecimalConstant(7.2) +
+        (BigDecimalConstant(1.8) * BigDecimalConstant(2.0))
     )
   }
 
-  it should "consider parenthesis precedence in a double expression" in new Fixture {
-    verify(
-      parser.parseDoubleExpression("(7.2 + 1.8)*2.0"),
-      (DoubleConstant(7.2) + DoubleConstant(1.8)) *
-        DoubleConstant(2.0)
-    )
+  it should "resolve double variables in an arithmetic expression" in new Fixture {
+    verify(parser.parseArithmeticExpression("value + 3.0"), BigDecimalVar("value") + BigDecimalConstant(3.0))
   }
 
-  it should "resolve double variables in a double expression" in new Fixture {
-    verify(parser.parseDoubleExpression("value + 3.0"), DoubleVar("value") + DoubleConstant(3.0))
-  }
-
-  it should "resolve multiple variables in a double expression with parenthesis" in new Fixture {
+  it should "resolve multiple variables in an arithmetic expression with parenthesis" in new Fixture {
     verify(
-      parser.parseDoubleExpression("(value +  3.0 ) *sourceId"),
-      (DoubleVar("value") + DoubleConstant(3.0)) * DoubleVar("sourceId")
+      parser.parseArithmeticExpression("(value +  3.0 ) *sourceId"),
+      (BigDecimalVar("value") + BigDecimalConstant(3.0)) * BigDecimalVar("sourceId")
     )
   }
 
