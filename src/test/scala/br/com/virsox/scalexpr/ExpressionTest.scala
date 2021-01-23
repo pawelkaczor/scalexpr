@@ -5,7 +5,8 @@ import java.time.Instant
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-/*** Tests for expression evaluation */
+/** * Tests for expression evaluation
+  */
 class ExpressionTest extends AnyFlatSpec with Matchers {
 
   trait BooleanConstants {
@@ -17,16 +18,16 @@ class ExpressionTest extends AnyFlatSpec with Matchers {
 
   "A logical expression" should "evaluate the && operator" in new BooleanConstants {
     (consFalse1 && consFalse2).resolve() shouldBe false
-    (consFalse1 && consTrue1 ).resolve() shouldBe false
-    (consTrue1  && consFalse2).resolve() shouldBe false
-    (consTrue1  && consTrue2 ).resolve() shouldBe true
+    (consFalse1 && consTrue1).resolve() shouldBe false
+    (consTrue1 && consFalse2).resolve() shouldBe false
+    (consTrue1 && consTrue2).resolve() shouldBe true
   }
 
   it should "evaluate the || operator" in new BooleanConstants {
     (consFalse1 || consFalse2).resolve() shouldBe false
-    (consFalse1 || consTrue1 ).resolve() shouldBe true
-    (consTrue1  || consFalse2).resolve() shouldBe true
-    (consTrue1  || consTrue2 ).resolve() shouldBe true
+    (consFalse1 || consTrue1).resolve() shouldBe true
+    (consTrue1 || consFalse2).resolve() shouldBe true
+    (consTrue1 || consTrue2).resolve() shouldBe true
   }
 
   // ---------------------------------------------------------------------------------------------------
@@ -125,7 +126,7 @@ class ExpressionTest extends AnyFlatSpec with Matchers {
   }
 
   it should "be used in arithmetic expressions" in {
-    val var1 = IntVar("age")
+    val var1  = IntVar("age")
     val value = IntConstant(10)
 
     val context = Map("age" -> 19, "name" -> "John")
@@ -140,9 +141,8 @@ class ExpressionTest extends AnyFlatSpec with Matchers {
     (var1 + var2).resolve(context) shouldBe 40
   }
 
-
   it should "be used in relational expressions" in {
-    val var1 = IntVar("age")
+    val var1  = IntVar("age")
     val value = IntConstant(10)
 
     val context: Map[String, Any] = Map("age" -> 19)
@@ -152,10 +152,9 @@ class ExpressionTest extends AnyFlatSpec with Matchers {
 
   // ---------------------------------------------------------------------------------------------------
 
-
   trait TestWithDates {
     val date1: Instant = Instant.parse("2015-12-01T10:00:00.000Z")
-    val date2 = Instant.parse("2010-10-10T10:00:00.000Z")
+    val date2          = Instant.parse("2010-10-10T10:00:00.000Z")
 
   }
 
@@ -173,7 +172,7 @@ class ExpressionTest extends AnyFlatSpec with Matchers {
   it should "evaluate when using date variables" in new TestWithDates {
 
     val cons1 = DateTimeConstant(date1)
-    val var1 = DateTimeVar("since")
+    val var1  = DateTimeVar("since")
 
     val context: Map[String, Any] = Map("since" -> date2)
 
@@ -182,6 +181,5 @@ class ExpressionTest extends AnyFlatSpec with Matchers {
     (var1 < cons1).resolve(context) shouldBe true
     (var1 > cons1).resolve(context) shouldBe false
   }
-
 
 }

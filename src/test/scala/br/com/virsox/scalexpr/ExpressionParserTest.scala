@@ -82,7 +82,7 @@ class ExpressionParserTest extends AnyFlatSpec with Matchers {
     )
   }
 
-  it should "resolve variables in a double expression" in new Fixture {
+  it should "resolve double variables in a double expression" in new Fixture {
     verify(parser.parseDoubleExpression("value + 3.0"), DoubleVar("value") + DoubleConstant(3.0))
   }
 
@@ -93,18 +93,25 @@ class ExpressionParserTest extends AnyFlatSpec with Matchers {
     )
   }
 
-  "An ExpressionParser" should "parse equality expressions with Strings" in new Fixture {
+  it should "parse equality expressions with Strings" in new Fixture {
     verify(parser.parseBooleanExpression("""name == "Wilson""""), StringVar("name") == StringConstant("Wilson"))
     verify(parser.parseBooleanExpression("""name != "John""""), StringVar("name") != StringConstant("John"))
   }
 
+  it should "parse relational expression" in new Fixture {
+    verify(
+      parser.parseRelationalExpression("""a > 5"""),
+      RelationalExpression(BigDecimalVar("a"), GreaterThan, BigDecimalConstant(5))
+    )
+  }
+
+  it should "parse comparison expressions with variables on both sides" in new Fixture {
+    verify(parser.parseBooleanExpression("""a == b"""), BigDecimalVar("a") == BigDecimalVar("b"))
+    verify(parser.parseBooleanExpression("""a > b"""), BigDecimalVar("a") > BigDecimalVar("b"))
+  }
+
   it should "parse comparison expressions with Ints" in new Fixture {
     verify(parser.parseBooleanExpression("""age == 19"""), BigDecimalVar("age") == BigDecimalConstant(19))
-    verify(parser.parseBooleanExpression("""age != 18"""), BigDecimalVar("age") != BigDecimalConstant(18))
-    verify(parser.parseBooleanExpression("""age > 5"""), BigDecimalVar("age") > BigDecimalConstant(5))
-    verify(parser.parseBooleanExpression("""age < 25"""), BigDecimalVar("age") < BigDecimalConstant(25))
-    verify(parser.parseBooleanExpression("""age >= 19"""), BigDecimalVar("age") >= BigDecimalConstant(19))
-    verify(parser.parseBooleanExpression("""age <= 19"""), BigDecimalVar("age") <= BigDecimalConstant(19))
   }
 
   it should "parse comparison expressions with Longs" in new Fixture {
