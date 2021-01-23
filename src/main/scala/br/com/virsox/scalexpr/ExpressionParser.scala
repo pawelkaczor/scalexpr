@@ -33,6 +33,14 @@ class ExpressionParser extends DateParser {
 
   import ExpressionParser._
 
+  def parseRelationalExpression(str: String): Try[RelationalExpression[_ >: Instant with String with BigDecimal]] =
+    parse(str, relationalExpr(_)) match {
+      case Parsed.Success(value, _) => Success(value)
+      case f: Parsed.Failure => //(_, _, _)  => {
+        println(s"[${f.index}], ${f.extra.trace()}")
+        Failure(ExpressionParsingException("Error"))
+    }
+
   /** *
     * Parse a String as a boolean expression.
     * @param str String to be parsed.
@@ -44,7 +52,6 @@ class ExpressionParser extends DateParser {
       case f: Parsed.Failure => //(_, _, _)  => {
         println(s"[${f.index}], ${f.extra.trace()}")
         Failure(ExpressionParsingException("Error"))
-
     }
 
   /** *
@@ -190,7 +197,7 @@ class ExpressionParser extends DateParser {
   }
 
   /** Parser of a numeric expression with parenthesis. */
-  def parens[A: P, T: TypeTag]: P[NumericExpr[T]] = P("(" ~ expr[A, T] ~ ")")
+  def parens[A: P, T: TypeTag]: P[NumericExpr[T]] = P("(" ~ numExpr[A, T] ~ ")")
 
   /** Parser of multiplication / division factors. */
   def factor[A: P, T: TypeTag]: P[NumericExpr[T]] = P(numericLiteral[A, T] | numericVariable[A, T] | parens)
@@ -199,11 +206,11 @@ class ExpressionParser extends DateParser {
   def divMul[A: P, T: TypeTag]: P[NumericExpr[T]] = P(factor[A, T] ~ (CharIn("*/").! ~ factor[A, T]).rep).map(evalNumeric[T])
 
   /** Parser for arithmetic expressions. */
-  def exprDouble[A: P]: P[NumericExpr[Double]] = expr[A, Double]
-  def exprInt[A: P]: P[NumericExpr[Int]]       = expr[A, Int]
-  def exprLong[A: P]: P[NumericExpr[Long]]     = expr[A, Long]
+  def exprDouble[A: P]: P[NumericExpr[Double]] = numExpr[A, Double]
+  def exprInt[A: P]: P[NumericExpr[Int]]       = numExpr[A, Int]
+  def exprLong[A: P]: P[NumericExpr[Long]]     = numExpr[A, Long]
 
-  def expr[A: P, T: TypeTag]: P[NumericExpr[T]] = P(divMul[A, T] ~ (CharIn("+\\-").! ~ divMul[A, T]).rep).map(evalNumeric[T])
+  def numExpr[A: P, T: TypeTag]: P[NumericExpr[T]] = P(divMul[A, T] ~ (CharIn("+\\-").! ~ divMul[A, T]).rep).map(evalNumeric[T])
 
   // ---------------------------------------------------------------
   // -----------------   Relational expressions   ------------------
@@ -230,23 +237,30 @@ class ExpressionParser extends DateParser {
   }
 
   def dateTimeTerm[_: P]: P[OrderingExpr[Instant] with SimpleExpression[Instant]] = P(dateTimeVariable | dateTimeLiteral)
-  def stringTerm[_: P]: P[OrderingExpr[String] with SimpleExpression[String]]     = P(stringLiteral | stringVariable)
+
+  def stringTerm[_: P]: P[OrderingExpr[String] with SimpleExpression[String]] = P(stringLiteral | stringVariable)
 
   def relationalOperators[_: P]: P[Unit] = P(StringIn("==", "!=", "<=", ">=", "<", ">"))
 
   // both sides need to be of the same type - there is no conversion
   def strRelationalExpr[A: P]: P[RelationalExpression[String]] =
     P(stringTerm ~ relationalOperators.! ~ stringTerm).map(evalRelational[String])
+
   def intRelationalExpr[A: P]: P[RelationalExpression[Int]] =
-    P(expr[A, Int] ~ relationalOperators.! ~ expr[A, Int]).map(evalRelational[Int])
+    P(numExpr[A, Int] ~ relationalOperators.! ~ numExpr[A, Int]).map(evalRelational[Int])
+
   def longRelationalExpr[A: P]: P[RelationalExpression[Long]] =
-    P(expr[A, Long] ~ relationalOperators.! ~ expr[A, Long]).map(evalRelational[Long])
+    P(numExpr[A, Long] ~ relationalOperators.! ~ numExpr[A, Long]).map(evalRelational[Long])
+
   def doubleRelationalExpr[A: P]: P[RelationalExpression[Double]] =
-    P(expr[A, Double] ~ relationalOperators.! ~ expr[A, Double]).map(evalRelational[Double])
+    P(numExpr[A, Double] ~ relationalOperators.! ~ numExpr[A, Double]).map(evalRelational[Double])
+
   def bigDecimalRelationalExpr[A: P]: P[RelationalExpression[BigDecimal]] =
-    P(expr[A, BigDecimal] ~ relationalOperators.! ~ expr[A, BigDecimal]).map(evalRelational[BigDecimal])
+    P(numExpr[A, BigDecimal] ~ relationalOperators.! ~ numExpr[A, BigDecimal]).map(evalRelational[BigDecimal])
+
   def dateTimeRelationalExpr[_: P]: P[RelationalExpression[Instant]] =
     P(dateTimeTerm ~ relationalOperators.! ~ dateTimeTerm).map(evalRelational[Instant])
+
   def relationalExpr[_: P]: P[RelationalExpression[_ >: Instant with String with BigDecimal]] =
     P(strRelationalExpr | dateTimeRelationalExpr | bigDecimalRelationalExpr)
 
