@@ -153,11 +153,13 @@ class ExpressionTest extends AnyFlatSpec with Matchers {
 
   it should "be used in string comparisons" in {
     val strVar                    = StringVar("name")
+    val strVar2                   = StringVar("surname")
     val strValue                  = StringConstant("John")
-    val context: Map[String, Any] = Map("name" -> "John")
+    val context: Map[String, Any] = Map("name" -> "John", "surname" -> "Kowalski")
 
     (strVar == strVar).resolve(context) shouldBe true
     (strVar != strVar).resolve(context) shouldBe false
+    (strVar != strVar2).resolve(context) shouldBe true
     (strVar != strValue).resolve(context) shouldBe false
     (strVar != strValue).resolve(context) shouldBe false
   }
