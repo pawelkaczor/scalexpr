@@ -160,6 +160,8 @@ class ExpressionTest extends AnyFlatSpec with Matchers {
     (strVar == strVar).resolve(context) shouldBe true
     (strVar != strVar).resolve(context) shouldBe false
     (strVar != strVar2).resolve(context) shouldBe true
+    (strVar > strVar2).resolve(context) shouldBe false
+    (strVar < strVar2).resolve(context) shouldBe true
     (strVar != strValue).resolve(context) shouldBe false
     (strVar != strValue).resolve(context) shouldBe false
   }
