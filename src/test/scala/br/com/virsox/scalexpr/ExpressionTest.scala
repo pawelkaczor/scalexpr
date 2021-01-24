@@ -141,13 +141,25 @@ class ExpressionTest extends AnyFlatSpec with Matchers {
     (var1 + var2).resolve(context) shouldBe 40
   }
 
-  it should "be used in relational expressions" in {
-    val var1  = IntVar("age")
-    val value = IntConstant(10)
-
+  it should "be used in arithmetic expressions with constants" in {
+    val intVar                    = IntVar("age")
+    val intValue                  = IntConstant(10)
     val context: Map[String, Any] = Map("age" -> 19)
-    (var1 > value).resolve(context) shouldBe true
-    (var1 < value).resolve(context) shouldBe false
+
+    (intVar == intVar).resolve(context) shouldBe true
+    (intVar > intValue).resolve(context) shouldBe true
+    (intVar < intValue).resolve(context) shouldBe false
+  }
+
+  it should "be used in string comparisons" in {
+    val strVar                    = StringVar("name")
+    val strValue                  = StringConstant("John")
+    val context: Map[String, Any] = Map("name" -> "John")
+
+    (strVar == strVar).resolve(context) shouldBe true
+    (strVar != strVar).resolve(context) shouldBe false
+    (strVar != strValue).resolve(context) shouldBe false
+    (strVar != strValue).resolve(context) shouldBe false
   }
 
   // ---------------------------------------------------------------------------------------------------

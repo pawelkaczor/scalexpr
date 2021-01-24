@@ -102,6 +102,7 @@ class ExpressionParserTest extends AnyFlatSpec with Matchers {
 
   it should "parse comparison expressions with variables on both sides" in new Fixture {
     verify(parser.parseBooleanExpression("""a == b"""), BigDecimalVar("a") == BigDecimalVar("b"))
+    verify(parser.parseBooleanExpression("""a != b"""), BigDecimalVar("a") != BigDecimalVar("b"))
     verify(parser.parseBooleanExpression("""a > b"""), BigDecimalVar("a") > BigDecimalVar("b"))
   }
 
