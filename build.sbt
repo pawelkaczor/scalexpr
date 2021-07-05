@@ -1,3 +1,4 @@
+ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / scalacOptions ++= Seq("-deprecation", "-feature")
 
 organization := "pl.newicom.scalexpr"
