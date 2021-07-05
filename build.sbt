@@ -15,10 +15,10 @@ publishTo := sonatypePublishToBundle.value
 sonatypeProfileName := "pl.newicom"
 
 libraryDependencies ++= Seq(
-  "ch.qos.logback" % "logback-classic" % "1.1.3",
   "org.scala-lang" % "scala-compiler"  % scalaVersion.value,
   "org.scala-lang" % "scala-reflect"   % scalaVersion.value,
   "com.lihaoyi"   %% "fastparse"       % "2.2.2",
+  "ch.qos.logback" % "logback-classic" % "1.2.3" % Test,
   "org.scalatest" %% "scalatest"       % "3.2.0" % Test
 )
 
