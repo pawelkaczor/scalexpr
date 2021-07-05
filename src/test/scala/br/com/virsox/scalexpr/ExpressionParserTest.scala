@@ -100,6 +100,13 @@ class ExpressionParserTest extends AnyFlatSpec with Matchers {
     )
   }
 
+  it should "parse relational expression with a var containing underscore" in new Fixture {
+    verify(
+      parser.parseRelationalExpression("""a_var > 5"""),
+      RelationalExpression(BigDecimalVar("a_var"), GreaterThan, BigDecimalConstant(5))
+    )
+  }
+
   it should "parse comparison expressions with variables on both sides" in new Fixture {
     verify(parser.parseBooleanExpression("""a == b"""), BigDecimalVar("a") == BigDecimalVar("b"))
     verify(parser.parseBooleanExpression("""a != b"""), BigDecimalVar("a") != BigDecimalVar("b"))
@@ -150,6 +157,14 @@ class ExpressionParserTest extends AnyFlatSpec with Matchers {
     verify(
       parser.parseBooleanExpression("""name == "Wilson" || (name == "Test" && age == 19)"""),
       (StringVar("name") == StringConstant("Wilson")) ||
+        ((StringVar("name") == StringConstant("Test")) && (BigDecimalVar("age") == BigDecimalConstant(19)))
+    )
+  }
+
+  it should "parse boolean expressions with parenthesis 2" in new Fixture {
+    verify(
+      parser.parseBooleanExpression("""isFirst == 1 || (name == "Test" && age == 19)"""),
+      (BigDecimalVar("isFirst") == BigDecimalConstant(1)) ||
         ((StringVar("name") == StringConstant("Test")) && (BigDecimalVar("age") == BigDecimalConstant(19)))
     )
   }

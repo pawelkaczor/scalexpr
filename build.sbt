@@ -1,10 +1,10 @@
-scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature")
+ThisBuild / scalacOptions ++= Seq("-deprecation", "-feature")
 
 organization := "pl.newicom.scalexpr"
 
 name := "scalexpr"
 
-scalaVersion := "2.13.3"
+scalaVersion := "2.13.6"
 
 publishMavenStyle := true
 homepage := Some(new URL("http://github.com/pawelkaczor/scalexpr"))
